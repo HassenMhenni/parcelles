@@ -1,6 +1,5 @@
 name: lint
 
-# chaque push, sur n'importe quelle branche
 on: push
 
 jobs:
