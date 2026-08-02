@@ -1,11 +1,13 @@
 # Cadastral parcelles API
 
-A small business API for cadastral parcelles, built on **PostGIS**. Geometries go
-in and out as **GeoJSON**, and the geographic rules (non-overlap, adjacency, zone
-filtering, area computation) are delegated to the spatial database rather than
-reimplemented in Python.
+A **Django** app for cadastral parcelles: list them, filter them, create and edit
+them, and read the ones next door. Django + DRF serve the HTTP side, geometries
+go in and out as **GeoJSON**, and **PostGIS** stores them and enforces the
+geographic rules (non-overlap, adjacency, zone filtering, area computation)
+rather than having them reimplemented in Python. The Django admin comes with it,
+on the same table, with the geometry edited on a map.
 
-Dataset: the 8,521 parcelles of central Toulouse (DGFiP / Etalab).
+Dataset: the 8,521 parcelles of central Toulouse.
 
 ## Getting started
 
