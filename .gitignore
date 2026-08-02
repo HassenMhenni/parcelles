@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.env
+.venv/
+
+# side project, not part of the deliverable for now
+llm/
