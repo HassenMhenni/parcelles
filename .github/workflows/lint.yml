@@ -1,9 +1,7 @@
 name: lint
 
-on:
-  push:
-    branches: [main]
-  pull_request:
+# chaque push, sur n'importe quelle branche
+on: push
 
 jobs:
   flake8:
