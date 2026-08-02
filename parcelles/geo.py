@@ -44,8 +44,10 @@ def parcelles_with_area():
 def validate_polygon(geom):
     """Return the geometry ready to be stored, or raise `InvalidGeometry`.
         when we arrive here geom is not a json anymore it is a GEOSGeometry object
-        geom.geom_type -> "Polygon" or "MultiPolygon" or "Point" or "LineString" or "MultiLineString" or "GeometryCollection"...
-        geom.srid -> 4326 or None or another number, meaning the geometry is in another coordinate system than WGS84
+        geom.geom_type -> "Polygon" or "MultiPolygon" or "Point" or "LineString"
+            or "MultiLineString" or "GeometryCollection"...
+        geom.srid -> 4326 or None or another number, meaning the geometry is in
+            another coordinate system than WGS84
         geom.valid -> True or False, meaning the geometry is valid or not
         geom.empty -> True or False, meaning the geometry is empty or not
         geom.valid_reason -> a string that explains why the geometry is invalid
@@ -57,7 +59,8 @@ def validate_polygon(geom):
             f"A parcelle is a single polygon; geometry received: {geom.geom_type}."
         )
 
-    # 2. srid should be 4326 (WGS84) or None (no SRID). If it is None, we set it to 4326. If it is not 4326, we raise an error.
+    # 2. srid should be 4326 (WGS84) or None (no SRID). If it is None, we set it
+    # to 4326. If it is not 4326, we raise an error.
     if geom.srid is None:
         geom.srid = SRID
     elif geom.srid != SRID:
@@ -68,7 +71,8 @@ def validate_polygon(geom):
     if geom.empty:
         raise InvalidGeometry("The geometry is empty.")
 
-    # Valid means that the data is correct but topologically it is not correct, for example a polygon that intersects itself.
+    # Valid means that the data is correct but topologically it is not correct,
+    # for example a polygon that intersects itself.
     if not geom.valid:
         raise InvalidGeometry(f"Invalid geometry: {geom.valid_reason}.")
 
@@ -88,10 +92,10 @@ def overlaps(geom, exclude=None):
     matrix DE-9IM
     every geometry is composed of 3 parts: interior, boundary, exterior
     every case explains the intersection between 2 geometries A and B
-    	        I(B)	B(B)	E(B)
-        I(A)	pos. 1	pos. 2	pos. 3
-        B(A)	pos. 4	pos. 5	pos. 6
-        E(A)	pos. 7	pos. 8	pos. 9
+            I(B)    B(B)    E(B)
+    I(A)    pos. 1  pos. 2  pos. 3
+    B(A)    pos. 4  pos. 5  pos. 6
+    E(A)    pos. 7  pos. 8  pos. 9
 
     every case can have the following values
     F = false, the intersection is empty
@@ -104,10 +108,10 @@ def overlaps(geom, exclude=None):
     # https://docs.djangoproject.com/en/6.0/ref/contrib/gis/geoquerysets/#relate
     # geom__bboverlaps compares bounding boxes of geometries and returns true if they overlap
     # it is very fast but can return false positives
+    # geom__relate: once we have a few candidates we check if it really overlaps
     queryset = Parcelle.objects.filter(geom__bboverlaps=geom).filter(
-            geom__relate=(geom, OVERLAP_MASK)  # once we have a few candidates we check if it really overlaps
-        )
-
+        geom__relate=(geom, OVERLAP_MASK)
+    )
 
     if exclude is not None:
         queryset = queryset.exclude(pk=exclude)

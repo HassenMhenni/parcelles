@@ -71,7 +71,7 @@ class Command(BaseCommand):
             file = open(csv_path, newline="", encoding="utf-8")
         except OSError as exc:
             raise CommandError(f"Unreadable CSV ({csv_path}): {exc}") from exc
-        
+
         with file, transaction.atomic():
             parcelles = [self._parcelle(row) for row in csv.DictReader(file)]
             Parcelle.objects.bulk_create(parcelles, batch_size=BATCH_SIZE)

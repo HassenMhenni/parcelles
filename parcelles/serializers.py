@@ -22,7 +22,10 @@ from datetime import timezone as tz
 from django.core.validators import RegexValidator
 from rest_framework import serializers
 from rest_framework.settings import api_settings
-from rest_framework_gis.fields import GeometryField # GEOSGeometry <-> dict GeoJSON {"type": "Polygon", "coordinates": [...]} because DRF dont know how to serialize GEOSGeometry objects like PolygonField in our case
+# GeometryField: GEOSGeometry <-> dict GeoJSON {"type": "Polygon", "coordinates": [...]}
+# because DRF dont know how to serialize GEOSGeometry objects like PolygonField
+# in our case
+from rest_framework_gis.fields import GeometryField
 
 from . import geo
 from .exceptions import Conflict
@@ -71,8 +74,8 @@ class ParcelleSerializer(serializers.ModelSerializer):
         # so i tell django im going to handle it myself in the validate method
         validators = []
 
-        # add a condition for a field without editing it , in order to validate the 4 fields of the business key,
-        # used for post if false error 404
+        # add a condition for a field without editing it , in order to validate
+        # the 4 fields of the business key, used for post if false error 404
         # example "code_insee": {"validators": [RegexValidator(r"^(2[AB]|[0-9]{2})[0-9]{3}$",)}
         extra_kwargs = {
             field: {"validators": [validator]}
@@ -86,8 +89,12 @@ class ParcelleSerializer(serializers.ModelSerializer):
         """
         properties = {field: getattr(instance, field) for field in IDENTIFIER_FIELDS}
         properties["surface_m2"] = self._area(instance)
-        properties["created_at"] = self.fields["created_at"].to_representation(instance.created_at)
-        properties["updated_at"] = self.fields["updated_at"].to_representation(instance.updated_at)
+        properties["created_at"] = self.fields["created_at"].to_representation(
+            instance.created_at
+        )
+        properties["updated_at"] = self.fields["updated_at"].to_representation(
+            instance.updated_at
+        )
 
         return {
             "type": "Feature",
@@ -142,8 +149,9 @@ class ParcelleSerializer(serializers.ModelSerializer):
                 {"properties": ["Expected an object holding the parcelle attributes."]}
             )
 
-        # we put geometry and properties in flat either to get them or send an error if they are empty since
-        # in the model they are non nullable, so if they are empty we will get an error when we try to save the instance
+        # we put geometry and properties in flat either to get them or send an
+        # error if they are empty since in the model they are non nullable, so if
+        # they are empty we will get an error when we try to save the instance
         flat = {}
 
         if "geometry" in data:
@@ -155,7 +163,8 @@ class ParcelleSerializer(serializers.ModelSerializer):
 
         return super().to_internal_value(flat)
 
-    #staticmethod because we don't need to access the instance of the class, we just need to access the method itself
+    # staticmethod because we don't need to access the instance of the class,
+    # we just need to access the method itself
     @staticmethod
     def _normalize(field, value):
         """
@@ -168,7 +177,7 @@ class ParcelleSerializer(serializers.ModelSerializer):
         value = value.strip()
         return value.upper() if field == "section" else value
 
-    #--------------------------------------------------------------- validate
+    # -------------------------------------------------------------- validate
 
     def _final_value(self, attrs, field):
         """
@@ -183,7 +192,8 @@ class ParcelleSerializer(serializers.ModelSerializer):
     def validate_geometry(self, geom):
         """ Django will call this method for geometry field validation,
             if the geometry is not valid it will raise a validation error
-            example client send "geometry": {"type": "Polygon", "coordinates": [[[1.45,43.61],[1.46,43.61],[1.46,43.62],[1.45,43.62],[1.45,43.61]]]}
+            example client send "geometry": {"type": "Polygon", "coordinates":
+            [[[1.45,43.61],[1.46,43.61],[1.46,43.62],[1.45,43.62],[1.45,43.61]]]}
             GeometryField of DRF converted it to GEOSGeometry : <Point object>.
         """
         try:
@@ -193,7 +203,8 @@ class ParcelleSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         """
-        validate the json, if there is a conflict with an existing parcelle raise a Conflict exception
+        validate the json, if there is a conflict with an existing parcelle
+        raise a Conflict exception
         ex {
             "geom": <Polygon object>,
             "code_insee": "31555",
@@ -250,9 +261,7 @@ class ParcelleSerializer(serializers.ModelSerializer):
                     "numero": "42"
         }
         """
-        # parcelle in base with a bbox
         parcelle = super().create(validated_data)
-        # calculate the area in m2
         return geo.parcelles_with_area().get(pk=parcelle.pk)
 
     def update(self, instance, validated_data):

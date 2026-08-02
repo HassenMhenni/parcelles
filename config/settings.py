@@ -13,7 +13,7 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-insecure-change-me")
 # local run dev mode
 DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"
 
-# every host is allowed since we are in dev mode 
+# every host is allowed since we are in dev mode
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "*").split(",")
 
 # ---------------------------------------------------------------------

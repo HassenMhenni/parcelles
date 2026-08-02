@@ -36,7 +36,8 @@ class ParcelleForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         """
-        add the regex validators for the four fields of the identifier (code_insee, prefixe, section, numero)
+        add the regex validators for the four fields of the identifier
+        (code_insee, prefixe, section, numero)
         """
         super().__init__(*args, **kwargs)
         for field, validator in IDENTIFIER_VALIDATORS.items():
@@ -46,7 +47,8 @@ class ParcelleForm(forms.ModelForm):
         """
         Validate the geometry field.
         """
-        #cleaned_data is a dict with the cleaned values of the form fields, after validation
+        # cleaned_data is a dict with the cleaned values of the form fields,
+        # after validation
         geom = self.cleaned_data["geom"]
         try:
             return geo.validate_polygon(geom)
@@ -173,7 +175,6 @@ class ParcelleAdmin(gis_admin.GISModelAdmin):
             return "—"
 
         return ", ".join(f"{coordinate:.6f}" for coordinate in parcelle.bbox)
-
 
     @admin.display(description="created on")
     def created_on(self, parcelle):

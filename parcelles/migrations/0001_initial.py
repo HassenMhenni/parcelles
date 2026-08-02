@@ -1,10 +1,3 @@
-"""Initial state of the Parcelle model.
-
-The model is `managed = False`, so this migration emits no DDL — the table is
-created by `db/schema.sql`. It exists so that `makemigrations --check` stays
-green and so the schema is documented on the Django side too.
-"""
-
 import django.contrib.gis.db.models.fields
 from django.db import migrations, models
 

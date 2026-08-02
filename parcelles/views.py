@@ -11,8 +11,6 @@ Routes exposed:
     DELETE /parcelles/{id}           delete
     GET    /parcelles/{id}/voisines  the parcelles touching it
 
-The views stay thin: the queryset with its area annotation comes from `geo`,
-the GeoJSON format and the business rules from the serializer.
 """
 
 from django.db import connection
@@ -30,7 +28,8 @@ from .serializers import IDENTIFIER_FIELDS, ParcelleSerializer
 class HealthView(APIView):
     """
     GET /health — API and database status.
-    use APIView because we don't need a queryset or a serializer, we just want to return a simple JSON response
+    use APIView because we don't need a queryset or a serializer, we just want
+    to return a simple JSON response
     """
 
     def get(self, request):
@@ -49,16 +48,21 @@ class HealthView(APIView):
 
 class ParcelleListCreateView(generics.ListCreateAPIView):
     """
-    generics.ListCreateAPIView (DRF): a generic class that combines two mixins on the same collection URL:
+    generics.ListCreateAPIView (DRF): a generic class that combines two mixins
+    on the same collection URL:
 
     GET → list(): returns the serialized queryset (with pagination if configured)
-    POST → create(): validates the payload via the serializer, saves it, and returns 201
+    POST → create(): validates the payload via the serializer, saves it, and
+    returns 201
     Everything else (PUT, DELETE) → automatically returns 405
-    All you need to do is provide the serializer_class and the queryset (or get_queryset()); the rest of the HTTP cycle is handled automatically.
+    All you need to do is provide the serializer_class and the queryset (or
+    get_queryset()); the rest of the HTTP cycle is handled automatically.
 
     this is the /parcelles endpoint.
 
-    GET /parcelles → paginated list (200 per page, max 1,000), filterable by code_insee, section, and geographic area (bbox=... or zone={GeoJSON}, with mode=intersects)
+    GET /parcelles → paginated list (200 per page, max 1,000), filterable by
+    code_insee, section, and geographic area (bbox=... or zone={GeoJSON}, with
+    mode=intersects)
     POST /parcelles → creates a parcelle via ParcelleSerializer
 
 
@@ -70,7 +74,8 @@ class ParcelleListCreateView(generics.ListCreateAPIView):
         # all the parcelles with area already calculated in SQL
         queryset = geo.parcelles_with_area()
         for field in IDENTIFIER_FIELDS:
-            # self.request.query_params is {"section": "ab", "numero": "12"} if GET /parcelles?section=ab&numero=12
+            # self.request.query_params is {"section": "ab", "numero": "12"}
+            # if GET /parcelles?section=ab&numero=12
             value = self.request.query_params.get(field, "").strip()
             if not value:
                 continue

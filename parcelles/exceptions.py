@@ -14,8 +14,10 @@ class Conflict(APIException):
     POST /parcelles
     {
     "type": "Feature",
-    "geometry": {"type": "Polygon", "coordinates": [[[1.45,43.61],[1.46,43.61],[1.46,43.62],[1.45,43.62],[1.45,43.61]]]},
-    "properties": {"code_insee": "31555", "prefixe": "806", "section": "AB", "numero": "139"}
+    "geometry": {"type": "Polygon", "coordinates":
+    [[[1.45,43.61],[1.46,43.61],[1.46,43.62],[1.45,43.62],[1.45,43.61]]]},
+    "properties": {"code_insee": "31555", "prefixe": "806", "section": "AB",
+    "numero": "139"}
     }
     → 409
     {
@@ -33,7 +35,8 @@ class Conflict(APIException):
     → 409
     {
     "code": "chevauchement",
-    "detail": "The geometry overlaps 1 existing parcelle(s). Two parcelles may only share a common border.",
+    "detail": "The geometry overlaps 1 existing parcelle(s). Two parcelles may
+    only share a common border.",
     "parcelles_en_conflit": [{"id": 4212, "identifiant": "31555-806-AB-2"}]
     }
 
