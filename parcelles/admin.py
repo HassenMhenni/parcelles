@@ -8,6 +8,7 @@ from .serializers import IDENTIFIER_FIELDS, IDENTIFIER_VALIDATORS
 
 DEFAULT_CENTRE = {"default_lon": 1.4442, "default_lat": 43.6047, "default_zoom": 15}
 
+#listed conflicts is the number of overlapping parcelles to list in the error message
 LISTED_CONFLICTS = 5
 
 

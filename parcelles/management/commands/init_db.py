@@ -13,8 +13,6 @@ from django.db import connection, transaction
 
 from ...models import Parcelle
 
-# INSERT batch size. The 8 521 parcelles go in about ten round trips instead of
-# 8 521 — that is the whole point of bulk_create.
 BATCH_SIZE = 1000
 
 

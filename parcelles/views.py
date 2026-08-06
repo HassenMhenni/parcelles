@@ -120,7 +120,7 @@ class ParcelleListCreateView(generics.ListCreateAPIView):
         field = "bbox" if bbox else "zone"
         try:
             raw = geo.read_bbox(bbox) if bbox else geo.read_geojson(zone)
-            geometry = geo.validate_zone(raw)
+            geometry = geo.validate_polygon(raw, label="zone")
         except geo.InvalidGeometry as error:
             raise ValidationError({field: [str(error)]}) from error
 

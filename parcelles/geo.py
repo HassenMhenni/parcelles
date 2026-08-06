@@ -8,7 +8,7 @@ from django.db.models.functions import Cast
 
 from .models import Parcelle
 
-# Cast converts the geometry (lon/lat) to the geography type
+# Cast converpts the geometry (lon/lat) to the geography type
 # Area computes the area of the geography type in square metres
 # SELECT ..., ST_Area(CAST("parcelle"."geom" AS geography)) AS "computed_area"
 # FROM "parcelle" ORDER BY "id";
@@ -19,8 +19,6 @@ OVERLAP_MASK = "T********"
 SRID = 4326
 ZONE_MODES = ("within", "intersects")
 DEFAULT_ZONE_MODE = "within"
-
-ZONE_TYPES = ("Polygon", "MultiPolygon")
 
 GEOMETRY_TOLERANCE = 1e-9
 
@@ -41,8 +39,12 @@ def parcelles_with_area():
     return Parcelle.objects.annotate(computed_area=AREA_M2).order_by("id")
 
 
-def validate_polygon(geom):
-    """Return the geometry ready to be stored, or raise `InvalidGeometry`.
+def validate_polygon(geom, label="parcelle"):
+    """Return the geometry ready to be used, or raise `InvalidGeometry`.
+
+        `label` only names the geometry in the error messages: a parcelle to
+        store, or the zone of the map used to filter.
+
         when we arrive here geom is not a json anymore it is a GEOSGeometry object
         geom.geom_type -> "Polygon" or "MultiPolygon" or "Point" or "LineString"
             or "MultiLineString" or "GeometryCollection"...
@@ -56,7 +58,7 @@ def validate_polygon(geom):
     # a parcelle should be a polygon
     if geom.geom_type != "Polygon":
         raise InvalidGeometry(
-            f"A parcelle is a single polygon; geometry received: {geom.geom_type}."
+            f"A {label} is a single polygon; geometry received: {geom.geom_type}."
         )
 
     # 2. srid should be 4326 (WGS84) or None (no SRID). If it is None, we set it
@@ -65,16 +67,19 @@ def validate_polygon(geom):
         geom.srid = SRID
     elif geom.srid != SRID:
         raise InvalidGeometry(
-            f"Geometry expected in WGS84 (EPSG:{SRID}), received in EPSG:{geom.srid}."
+            f"A {label} is expected in WGS84 (EPSG:{SRID}), "
+            f"received in EPSG:{geom.srid}."
         )
 
     if geom.empty:
-        raise InvalidGeometry("The geometry is empty.")
+        raise InvalidGeometry(f"The {label} is empty.")
 
     # Valid means that the data is correct but topologically it is not correct,
     # for example a polygon that intersects itself.
+    # An invalid geometry (a self-crossing ring) makes PostGIS raise mid-query,
+    # which would surface as a 500. Caught here, it is a 400.
     if not geom.valid:
-        raise InvalidGeometry(f"Invalid geometry: {geom.valid_reason}.")
+        raise InvalidGeometry(f"Invalid {label}: {geom.valid_reason}.")
 
     return geom
 
@@ -173,36 +178,6 @@ def read_bbox(text):
     rectangle = Polygon.from_bbox((min_lon, min_lat, max_lon, max_lat))
     rectangle.srid = SRID
     return rectangle
-
-
-def validate_zone(geom):
-    """Return the zone geometry ready to filter with, or raise `InvalidGeometry`.
-
-    Same checks as `validate_polygon`, minus the "one single polygon" rule: a
-    zone may legitimately be a MultiPolygon (two separate districts, an island).
-    """
-    if geom.geom_type not in ZONE_TYPES:
-        raise InvalidGeometry(
-            "A zone is a surface (Polygon or MultiPolygon); "
-            f"geometry received: {geom.geom_type}."
-        )
-
-    if geom.srid is None:
-        geom.srid = SRID
-    elif geom.srid != SRID:
-        raise InvalidGeometry(
-            f"Zone expected in WGS84 (EPSG:{SRID}), received in EPSG:{geom.srid}."
-        )
-
-    if geom.empty:
-        raise InvalidGeometry("The zone is empty.")
-
-    # An invalid zone (a self-crossing ring) makes PostGIS raise mid-query,
-    # which would surface as a 500. Caught here, it is a 400.
-    if not geom.valid:
-        raise InvalidGeometry(f"Invalid zone: {geom.valid_reason}.")
-
-    return geom
 
 
 def validate_mode(mode):
